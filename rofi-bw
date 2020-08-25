@@ -1,0 +1,35 @@
+#!/bin/sh
+
+# The timeout after which the session key is deleted from the key manager.
+TIMEOUT=3600
+
+# Check if we have a session key stored in the key manager.
+KEY=$(keyctl request user bwsession 2>/dev/null)
+if [ -z $KEY ]
+then
+    # No active session key could be found. Ask the user for their master
+    # password, unlock the vault, and store the session key in the key manager.
+    PW=$(printf '' | rofi -dmenu -p "Master Password" -password -lines 0) || exit $?
+    SESSION=$(echo $PW | bw unlock 2>/dev/null | grep 'export' | sed -E 's/.*export BW_SESSION="(.*==)"$/\1/' || exit_error $? "Could not unlock vault")
+    KEY=$(keyctl add user bwsession $SESSION @u)
+    keyctl timeout $KEY $TIMEOUT > /dev/null
+else
+    # We already have an active session, so just retrieve it from the key
+    # manager.
+    SESSION=$(keyctl pipe $KEY 2>/dev/null)
+fi
+ITEMS=$(bw list items --session $SESSION | jq -r '.[].name')
+SELECT=$(echo "$ITEMS" | rofi -dmenu -p "Search")
+
+# If not entry was selected, exit immediately.
+if [ -z $SELECT ]
+then
+    exit
+fi
+
+# Retrieve password from bitwarden and copy it to the clipboard.
+# The clipboard is cleared after 10 seconds have passed.
+PASS=$(bw get item --session $SESSION $SELECT | jq -r '.login.password')
+echo $PASS | xclip -selection c -r
+sleep 10
+echo "" | xclip -selection c -l 1
