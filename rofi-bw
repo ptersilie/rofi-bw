@@ -1,7 +1,9 @@
 #!/bin/sh
 
-# The timeout after which the session key is deleted from the key manager.
+# Time after which the session key is deleted from the key manager.
 TIMEOUT=3600
+# Time after which the clipboard is cleared.
+TCLEAR=10
 
 # Check if we have a session key stored in the key manager.
 KEY=$(keyctl request user bwsession 2>/dev/null)
@@ -28,8 +30,8 @@ then
 fi
 
 # Retrieve password from bitwarden and copy it to the clipboard.
-# The clipboard is cleared after 10 seconds have passed.
+# The clipboard is cleared after $TCLEAR seconds have passed.
 PASS=$(bw get item --session $SESSION $SELECT | jq -r '.login.password')
 echo $PASS | xclip -selection c -r
-sleep 10
+sleep $TCLEAR
 echo "" | xclip -selection c -l 1
