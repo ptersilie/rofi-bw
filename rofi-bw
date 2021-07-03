@@ -20,8 +20,9 @@ else
     # manager.
     SESSION=$(keyctl pipe $KEY 2>/dev/null)
 fi
-ITEMS=$(bw list items --session $SESSION | jq -r '.[].name')
-SELECT=$(echo "$ITEMS" | rofi -dmenu -p "Search")
+ITEMS=$(bw list items --session $SESSION)
+NAMES=$(echo "$ITEMS" | jq -r '.[].name')
+SELECT=$(echo "$NAMES" | rofi -dmenu -p "Search")
 
 # If not entry was selected, exit immediately.
 if [ -z $SELECT ]
@@ -29,9 +30,12 @@ then
     exit
 fi
 
+# Get the item
+ITEM=$(echo "$ITEMS" | jq '.[] | select(.name == "'$SELECT'")')
+
 # Retrieve password from bitwarden and copy it to the clipboard.
 # The clipboard is cleared after $TCLEAR seconds have passed.
-PASS=$(bw get item --session $SESSION $SELECT | jq -r '.login.password')
+PASS=$(echo "$ITEM" | jq -r '.login.password')
 echo $PASS | xclip -selection c -r
 sleep $TCLEAR
 echo "" | xclip -selection c -l 1
