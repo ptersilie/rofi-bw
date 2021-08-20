@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Time after which the session key is deleted from the key manager.
-TIMEOUT=3600
+TIMEOUT=36000
 # Time after which the clipboard is cleared.
 TCLEAR=10
 
@@ -31,7 +31,7 @@ then
 fi
 
 # Get the item
-ITEM=$(echo "$ITEMS" | jq '.[] | select(.name == "'$SELECT'")')
+ITEM=$(echo "$ITEMS" | jq ".[] | select(.name == \"$SELECT\")")
 
 # Retrieve password from bitwarden and copy it to the clipboard.
 # The clipboard is cleared after $TCLEAR seconds have passed.
