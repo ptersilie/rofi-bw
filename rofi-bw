@@ -11,31 +11,47 @@ if [ -z $KEY ]
 then
     # No active session key could be found. Ask the user for their master
     # password, unlock the vault, and store the session key in the key manager.
+    echo "No active session."
     PW=$(printf '' | rofi -dmenu -p "Master Password" -password -lines 0) || exit $?
     SESSION=$(echo $PW | bw unlock 2>/dev/null | grep 'export' | sed -E 's/.*export BW_SESSION="(.*==)"$/\1/' || exit_error $? "Could not unlock vault")
     KEY=$(keyctl add user bwsession $SESSION @u)
     keyctl timeout $KEY $TIMEOUT > /dev/null
+    # TODO: Implement caching.
 else
     # We already have an active session, so just retrieve it from the key
     # manager.
+    echo "Active session found."
     SESSION=$(keyctl pipe $KEY 2>/dev/null)
 fi
+
 ITEMS=$(bw list items --session $SESSION)
 NAMES=$(echo "$ITEMS" | jq -r '.[].name')
-SELECT=$(echo "$NAMES" | rofi -dmenu -p "Search")
 
-# If not entry was selected, exit immediately.
-if [ -z $SELECT ]
-then
-    exit
-fi
+# Show menu
+while :
+do
+    if SELECT=$(echo "$NAMES" | rofi -dmenu "Search" -kb-custom-1 "Alt+k");
+    then
+	# Get the item
+	ITEM=$(echo "$ITEMS" | jq ".[] | select(.name == \"$SELECT\")")
 
-# Get the item
-ITEM=$(echo "$ITEMS" | jq ".[] | select(.name == \"$SELECT\")")
-
-# Retrieve password from bitwarden and copy it to the clipboard.
-# The clipboard is cleared after $TCLEAR seconds have passed.
-PASS=$(echo "$ITEM" | jq -r '.login.password')
-echo $PASS | xclip -selection c -r
-sleep $TCLEAR
-echo "" | xclip -selection c -l 1
+	# Retrieve password from bitwarden and type it out.
+	PASS=$(echo "$ITEM" | jq -r '.login.password')
+	xdotool type --delay 0  "$PASS"
+	# Replace above command with this to copy password to clipboard instead of
+	# typing it out (the clipboard will be cleared after $TCLEAR seconds):
+	# 	echo $PASS | xclip -selection c -r
+	# 	sleep $TCLEAR
+	# 	echo "" | xclip -selection c -l 1
+	exit
+    else
+	EXITCODE=$?
+	if [ $EXITCODE -eq 10 ]
+	then
+	    echo "Sync vault."
+	    bw sync --session $SESSION
+	else
+	    exit
+	fi
+    fi
+done
