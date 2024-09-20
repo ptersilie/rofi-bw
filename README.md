@@ -19,8 +19,9 @@ facility `keyctl` and is purged after 1 hour, locking the vault.
 
 ## Installation and Usage
 
-Download the script `rofi-bw` or clone this repository and run `./rofi-bw`. To
-sync the vault press `Alt+K`.
+If not already done, log into your vault using `bw login` on the command line.
+Download the script `rofi-bw` or clone this repository and then run
+`./rofi-bw`. To re-sync the vault press `Alt+K`.
 
 ## Configuration
 
