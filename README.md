@@ -19,9 +19,10 @@ facility `keyctl` and is purged after 1 hour, locking the vault.
 
 ## Installation and Usage
 
-Download the script `rofi-bw` or clone this repository and run `./rofi-bw`.
+Download the script `rofi-bw` or clone this repository and run `./rofi-bw`. To
+sync the vault press `Alt+K`.
 
 ## Configuration
 
-`TIMEOUT`: Time in seconds after which the Bitwarden vault is locked. Default: 3600.
-`TCLEAR`: Time in seconds after which the clipboard is cleared. Default: 10.
+- `TIMEOUT`: Time in seconds after which the Bitwarden vault is locked. Default: 3600.
+- `TCLEAR`: Time in seconds after which the clipboard is cleared. Default: 10.
