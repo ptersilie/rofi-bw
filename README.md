@@ -3,10 +3,19 @@
 An interface to the Bitwarden CLI that uses rofi to display passwords and copy
 them to the clipboard.
 
-Requires the Bitwarden CLI (`bw`) to be installed and setup. By default,
-passwords copied to the clipboard are automatically cleared after 10 seconds,
-and the Bitwarden session (which is stored stored using the Linux key
-management facility `keyctl`), is purged after 1 hour, locking the vault.
+Requires the Bitwarden CLI (`bw`) to be installed and setup. After selecting a
+password, it is immediately typed out using `xdotool`. Alternatively, the
+script can be changed to copy the password to the clipboard instead (requires
+uncommenting code in `rofi-bw`).
+
+After unlocking the vault the session key is stored using Linux key management
+facility `keyctl` and is purged after 1 hour, locking the vault.
+
+## Requirements
+
+- keyctl
+- bw
+- xdotool
 
 ## Installation and Usage
 
